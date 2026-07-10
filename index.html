@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0C0E12">
+<meta name="apple-mobile-web-app-title" content="GYMY">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<title>GYMY — Programme</title>
+<style>
+  :root{
+    --bg:#0C0E12; --card:#14171D; --card2:#171B22; --line:#212633; --line2:#1B202A;
+    --txt:#EDEFF3; --txt2:#8A93A6; --txt3:#7E8798; --muted:#5B6373;
+    --acc:#FF5A36;
+    --sys:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--bg);color:var(--txt);font-family:var(--sys)}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+  button{font-family:var(--sys);cursor:pointer;border:none;background:none;color:inherit}
+  input,textarea{font-family:var(--sys)}
+
+  /* ---------- header ---------- */
+  .top{position:sticky;top:0;z-index:30;background:rgba(12,14,18,.92);
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line2);
+    padding:calc(env(safe-area-inset-top) + 12px) 16px 10px 16px}
+  .toprow{display:flex;align-items:center;justify-content:space-between}
+  .logo{font-size:14px;font-weight:800;letter-spacing:.02em}
+  .logo b{color:var(--acc)}
+  .logo span{font-weight:600;color:var(--txt3);letter-spacing:.14em;font-size:9px;
+    text-transform:uppercase;margin-left:2px;display:block;margin-top:1px}
+  .tools{display:flex;align-items:center;gap:6px}
+  .saved{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    color:#34D399;opacity:0;transition:opacity .2s}
+  .saved.on{opacity:1}
+  .menu-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;background:var(--card)}
+  .menu-btn svg{width:18px;height:18px;stroke:var(--txt2)}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:7px;overflow-x:auto;padding:11px 16px 12px 16px;
+    scrollbar-width:none;-ms-overflow-style:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;padding:8px 13px;border-radius:11px;border:1px solid var(--line);
+    background:var(--card);font-size:12px;font-weight:800;letter-spacing:.02em;
+    color:var(--txt2);white-space:nowrap;transition:.15s;display:flex;align-items:center;gap:7px}
+  .tab .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+  .tab.active{color:#0C0E12;border-color:transparent}
+  .tab small{font-weight:700;font-size:10px;opacity:.7}
+
+  /* ---------- session panel ---------- */
+  .wrap{padding:0 16px 40px 16px;max-width:560px;margin:0 auto}
+  .session{display:none}
+  .session.active{display:block}
+
+  .head{position:relative;padding:22px 0 4px 0;overflow:hidden}
+  .ghost{position:absolute;top:-46px;right:-22px;font-size:210px;font-weight:800;
+    line-height:1;letter-spacing:-.06em;color:var(--acc);opacity:.12;pointer-events:none}
+  .stag{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--acc)}
+  .stitle{font-size:40px;font-weight:800;letter-spacing:-.025em;line-height:1.03;
+    text-transform:uppercase;margin-top:5px}
+  .ssub{font-size:12px;font-weight:500;color:var(--txt2);margin-top:8px;line-height:1.4}
+
+  .cyc{display:flex;gap:3px;margin:16px 0 4px 0}
+  .cseg{flex:1;text-align:center}
+  .cbar{height:6px;border-radius:3px;background:#262C38}
+  .cbar.off{background:transparent;border:1px solid #232833;height:5px;margin-top:.5px}
+  .cbar.now{background:var(--acc)}
+  .clab{font-size:7.5px;font-weight:700;letter-spacing:.04em;color:var(--muted);margin-top:5px}
+  .clab.now{color:var(--acc)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:15px}
+  .chip{font-size:9.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+    padding:6px 10px;border-radius:20px;border:1px solid var(--line);color:var(--txt2)}
+  .chip.acc{background:color-mix(in srgb,var(--acc) 12%,transparent);
+    border-color:color-mix(in srgb,var(--acc) 38%,transparent);color:var(--acc)}
+
+  .hint{font-size:10.5px;font-weight:500;color:var(--txt3);line-height:1.45;
+    margin:16px 0 4px 0;padding:10px 12px;border:1px dashed var(--line);border-radius:10px}
+  .hint b{color:var(--txt2)}
+
+  .rule{height:1px;background:var(--line2);margin:16px 0 14px 0}
+
+  /* ---------- exercise ---------- */
+  .exo{background:var(--card);border:1px solid var(--line);border-radius:15px;
+    padding:13px 14px;margin-bottom:9px;transition:.15s}
+  .exo.tops{border-left:3px solid var(--acc);
+    background:color-mix(in srgb,var(--acc) 5%,var(--card))}
+  .exo.done{opacity:.5}
+  .exhead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .exl{display:flex;align-items:center;gap:9px;min-width:0}
+  .idx{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--acc);flex:0 0 auto}
+  .badge{font-size:8px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
+    background:var(--acc);color:#0C0E12;border-radius:4px;padding:3px 6px}
+  .fus{font-size:8px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;
+    color:var(--txt3);border:1px dashed #39404F;border-radius:4px;padding:2px 5px}
+  .check{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--line);
+    flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:var(--card2)}
+  .check svg{width:15px;height:15px;stroke:var(--acc);opacity:0;transition:.15s}
+  .exo.done .check{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 16%,transparent)}
+  .exo.done .check svg{opacity:1}
+  .name{font-size:15.5px;font-weight:700;letter-spacing:-.01em;line-height:1.25;margin-top:9px}
+  .cue{font-size:10.5px;font-weight:500;color:var(--txt3);line-height:1.4;margin-top:5px}
+
+  /* stat row (normal) */
+  .stat{display:flex;gap:10px;margin-top:12px;align-items:flex-end}
+  .grp{display:flex;flex-direction:column;gap:5px}
+  .glab{font-size:8px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+  .sets{display:flex;align-items:center;gap:4px}
+  .x{font-size:16px;font-weight:600;color:var(--txt3);padding:0 1px}
+  .spacer{flex:1}
+
+  /* editable inputs — min 16px to prevent iOS zoom */
+  input.ed{background:transparent;border:none;border-bottom:1.5px dotted
+    color-mix(in srgb,var(--acc) 45%,transparent);color:var(--txt);
+    text-align:center;font-weight:800;letter-spacing:-.01em;padding:2px 2px 3px 2px;
+    outline:none;transition:.15s;-moz-appearance:textfield}
+  input.ed::-webkit-outer-spin-button,input.ed::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input.ed:focus{border-bottom-style:solid;border-bottom-color:var(--acc)}
+  input.num{width:44px;font-size:18px}
+  input.wt{width:104px;font-size:17px;color:var(--acc);text-align:left}
+  input.ed::placeholder{color:var(--muted);font-weight:700}
+
+  /* top set rows */
+  .tsrow{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .tslab{font-size:8.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--txt3);width:58px;flex:0 0 auto}
+  .tsrow .sets{flex:0 0 auto}
+  .tsrow .wwrap{margin-left:auto}
+
+  .note{width:100%;margin-top:14px;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:12px;color:var(--txt);font-size:14px;line-height:1.5;
+    resize:vertical;min-height:64px}
+  .note::placeholder{color:var(--muted)}
+  .notelab{font-size:9px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);margin:22px 0 8px 0}
+
+  /* ---------- sheet ---------- */
+  .ov{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);
+    -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+    display:none;align-items:flex-end}
+  .ov.on{display:flex}
+  .sheet{width:100%;max-width:560px;margin:0 auto;background:#12151B;
+    border-top-left-radius:22px;border-top-right-radius:22px;border:1px solid var(--line);
+    border-bottom:none;padding:8px 18px calc(env(safe-area-inset-bottom) + 22px) 18px;
+    max-height:88vh;overflow-y:auto}
+  .grab{width:40px;height:4px;border-radius:2px;background:#333A47;margin:8px auto 16px auto}
+  .shtitle{font-size:18px;font-weight:800;letter-spacing:-.01em;margin-bottom:4px}
+  .shsub{font-size:12px;color:var(--txt3);line-height:1.5;margin-bottom:16px}
+  .act{width:100%;text-align:left;background:var(--card);border:1px solid var(--line);
+    border-radius:13px;padding:15px 15px;margin-bottom:9px;display:flex;align-items:center;gap:13px}
+  .act svg{width:20px;height:20px;stroke:var(--txt2);flex:0 0 auto}
+  .act .at{font-size:14.5px;font-weight:700}
+  .act .ad{font-size:11px;color:var(--txt3);margin-top:2px;line-height:1.35}
+  .act.danger .at{color:#F87171}
+  .act.danger svg{stroke:#F87171}
+  .ta{width:100%;background:#0E1116;border:1px solid var(--line);border-radius:12px;
+    padding:12px;color:var(--txt);font-size:12px;font-family:ui-monospace,Menlo,monospace;
+    line-height:1.5;min-height:150px;resize:vertical;margin:6px 0 10px 0;word-break:break-all}
+  .row2{display:flex;gap:9px}
+  .pbtn{flex:1;text-align:center;background:var(--acc);color:#0C0E12;font-weight:800;
+    font-size:14px;border-radius:12px;padding:14px}
+  .pbtn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+  .info-block{font-size:12.5px;line-height:1.6;color:var(--txt2)}
+  .info-block b{color:var(--txt)}
+  .info-block .k{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--acc);margin-top:12px}
+  .close{width:100%;text-align:center;padding:14px;margin-top:4px;color:var(--txt3);
+    font-weight:700;font-size:13px}
+
+  .banner{background:#3A2410;border:1px solid #6B4A1F;color:#FFD79A;font-size:11.5px;
+    line-height:1.45;padding:11px 13px;border-radius:11px;margin:14px 0 0 0;font-weight:500;display:none}
+  .banner.on{display:block}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 26px);
+    background:#1B2028;border:1px solid var(--line);color:var(--txt);font-size:13px;font-weight:600;
+    padding:12px 18px;border-radius:12px;z-index:60;opacity:0;transition:.25s;pointer-events:none}
+  .toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="toprow">
+    <div class="logo"><b>GYMY</b> — Programme<span>Hypertrophie · Cycle 9 jours</span></div>
+    <div class="tools">
+      <span class="saved" id="saved">Enregistré</span>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="banner" id="banner">⚠️ La sauvegarde ne fonctionne pas ici. Télécharge ce fichier et ouvre-le dans <b>Safari / Chrome</b> sur ton téléphone, puis « Ajouter à l'écran d'accueil ». Tes modifications seront alors enregistrées sur ton appareil.</div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+<div class="wrap" id="wrap"></div>
+
+<!-- sheet -->
+<div class="ov" id="ov">
+  <div class="sheet" id="sheet"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const KEY="gymy_prog_v2";
+const DAYS=["J1","J2","J3","J4","J5","J6","J7","J8","J9"];
+const TRAIN=new Set(["J1","J2","J4","J5","J7","J8"]);
+
+const PROGRAM=[
+ {n:"1",day:"J1",tag:"Séance 1 · J1",title:"PUSH",acc:"#FF5A36",
+  sub:"Haut de pecs · Deltoïde latéral · Triceps",series:"17 séries",dur:"≈ 1h25",
+  exos:[
+   {id:"s1e1",name:"Développé incliné machine",cue:"Plus de stabilité — descente profonde, étirement complet",sets:"4",reps:"8",w:""},
+   {id:"s1e2",name:"Développé couché barre",cue:"Ton exo plaisir — trajectoire propre",sets:"3",reps:"6",w:"82,5 kg"},
+   {id:"s1e3",name:"Écarté poulie bas → haut",cue:"Pause 1 s bras ouverts — suit les fibres claviculaires",sets:"3",reps:"10",w:"10 kg"},
+   {id:"s1e4",name:"Élévations latérales poulie cross-body",cue:"Câble derrière le corps, tension max en étirement",sets:"4",reps:"12",w:""},
+   {id:"s1e5",name:"Extension triceps unilatérale poulie",cue:"Coude fixe, extension complète",sets:"3",reps:"10",w:"≈ 11,25 kg"},
+  ]},
+ {n:"2",day:"J2",tag:"Séance 2 · J2",title:"PULL",acc:"#4D9FFF",
+  sub:"Grand dorsal · Biceps · Deltoïde postérieur",series:"17 séries",dur:"≈ 1h30",
+  exos:[
+   {id:"s2e1",name:"Chin-up lesté — prise supination",cue:"Bras tendus en bas à chaque rep — descente complète",top:1,
+    ts:"1",tr:"4",tw:"+42,5 kg",bs:"3",br:"6",bw:"+35 kg"},
+   {id:"s2e2",name:"Tirage vertical unilatéral cross-body",cue:"À genou, tire en travers du corps — étirement max du dorsal",sets:"2",reps:"10",w:""},
+   {id:"s2e3",name:"Pullover poulie",cue:"Pause 1 s bras hauts, en position étirée",sets:"2",reps:"12",w:"≈ 25 kg"},
+   {id:"s2e4",name:"Face pull",cue:"Coudes hauts, tire vers le front",sets:"3",reps:"15",w:""},
+   {id:"s2e5",name:"Curl incliné haltères",cue:"Banc 45–55°, coudes derrière le buste, pause en bas",sets:"3",reps:"10",w:""},
+   {id:"s2e6",name:"Curl Bayesian poulie",cue:"Dos à la poulie basse, bras en extension derrière toi",sets:"3",reps:"12",w:""},
+  ]},
+ {n:"3",day:"J4",tag:"Séance 3 · J4",title:"JAMBES",acc:"#34D399",
+  sub:"Quadriceps · Ischios · Deltoïde latéral · Abdos",series:"20 séries",dur:"≈ 1h35",
+  exos:[
+   {id:"s3e1",name:"Squat",cue:"Profondeur complète, gainage verrouillé",top:1,
+    ts:"1",tr:"4",tw:"120 kg",bs:"2",br:"7",bw:"105 kg"},
+   {id:"s3e2",name:"Soulevé de terre roumain",cue:"Étirement contrôlé, barre collée aux jambes",sets:"3",reps:"8",w:"110 kg"},
+   {id:"s3e3",name:"Hack squat",cue:"Profondeur max, buste calé · presse pieds bas en secours",sets:"3",reps:"8",w:""},
+   {id:"s3e4",name:"Leg curl assis",cue:"Hanche fléchie = ischios plus étirés — prioritaire",sets:"3",reps:"12",w:"87,5 kg"},
+   {id:"s3e5",name:"Adducteurs",cue:"À sauter si tu manques de temps",sets:"2",reps:"12",w:"≈ 100 kg",fus:1},
+   {id:"s3e6",name:"Élévations latérales haltères",cue:"2ᵉ dose du cycle pour le deltoïde latéral",sets:"3",reps:"8",w:"12 kg"},
+   {id:"s3e7",name:"Relevés de jambes suspendu",cue:"Enroule le bassin, contrôle la descente",sets:"3",reps:"12",w:"PDC"},
+  ]},
+ {n:"4",day:"J5",tag:"Séance 4 · J5",title:"UPPER",acc:"#A78BFA",
+  sub:"Pecs · Dos antagonistes · Biceps",series:"18 séries",dur:"≈ 1h30",
+  exos:[
+   {id:"s4e1",name:"Dips lestés",cue:"Amplitude complète en bas, buste légèrement penché",top:1,
+    ts:"1",tr:"4",tw:"+85 kg",bs:"2",br:"8",bw:"+62 kg"},
+   {id:"s4e2",name:"Écarté poulie debout — mi-hauteur",cue:"Angle différent du bas → haut de S1 · pause 1 s en étirement",sets:"3",reps:"10",w:"10 kg"},
+   {id:"s4e3",name:"Rowing Hammer prise neutre",cue:"Laisse l'omoplate avancer en bas de rep",sets:"3",reps:"10",w:"45 kg"},
+   {id:"s4e4",name:"Tirage vertical prise neutre serrée",cue:"Coudes au corps — cible le grand dorsal",sets:"3",reps:"10",w:""},
+   {id:"s4e5",name:"Curl pupitre",cue:"Descente complète, sans reposer en bas",sets:"3",reps:"10",w:"36,25 kg"},
+   {id:"s4e6",name:"Crunch à la poulie",cue:"Enroule le dos, ne tire pas avec les bras",sets:"3",reps:"12",w:"28 kg"},
+  ]},
+ {n:"5",day:"J7",tag:"Séance 5 · J7",title:"ÉPAULES",acc:"#FFB224",
+  sub:"Deltoïdes · Haut de pecs · Bras",series:"17 séries",dur:"≈ 1h20",
+  exos:[
+   {id:"s5e1",name:"Développé militaire",cue:"Debout, trajectoire proche du visage",sets:"3",reps:"7",w:"53 kg"},
+   {id:"s5e2",name:"Développé incliné barre",cue:"3ᵉ angle du cycle sur l'axe claviculaire",sets:"3",reps:"8",w:"57,5 kg"},
+   {id:"s5e3",name:"Pec deck",cue:"Pause en position étirée · à sauter si manque de temps",sets:"2",reps:"12",w:"",fus:1},
+   {id:"s5e4",name:"Élévations latérales machine",cue:"3ᵉ dose du cycle, exécution stricte",sets:"4",reps:"12",w:"30 kg"},
+   {id:"s5e5",name:"Oiseau à la poulie",cue:"Plan transverse, coude presque tendu",sets:"2",reps:"15",w:"≈ 5 kg"},
+   {id:"s5e6",name:"Extension triceps poulie",cue:"Un point fort s'entretient — 3 séries",sets:"3",reps:"10",w:"≈ 27,5 kg"},
+  ]},
+ {n:"6",day:"J8",tag:"Séance 6 · J8",title:"DOS · JAMBES",acc:"#2DD4BF",
+  sub:"Épaisseur dorsale · Delt. postérieur · Quadris · Ischios",series:"21 séries",dur:"≈ 1h35",
+  exos:[
+   {id:"s6e1",name:"Rowing barre",cue:"Buste incliné, tire vers le nombril",sets:"3",reps:"8",w:"70 kg"},
+   {id:"s6e2",name:"Tirage horizontal unilatéral poulie",cue:"Coude près du corps, laisse étirer loin devant",sets:"3",reps:"10",w:"40 kg"},
+   {id:"s6e3",name:"Oiseau pec deck inversé",cue:"3ᵉ dose de deltoïde postérieur du cycle",sets:"2",reps:"15",w:""},
+   {id:"s6e4",name:"Élévations latérales poulie",cue:"4ᵉ dose — léger, en pump · à sauter si manque de temps",sets:"2",reps:"15",w:"",fus:1},
+   {id:"s6e5",name:"Leg extension",cue:"Dossier incliné en arrière si réglable : droit fémoral étiré",sets:"3",reps:"12",w:"≈ 105 kg"},
+   {id:"s6e6",name:"Leg curl allongé",cue:"Variante de S3, hanche étendue",sets:"3",reps:"12",w:"≈ 27,5 kg"},
+   {id:"s6e7",name:"Extension lombaires",cue:"Contrôle total, sans à-coups · à sauter si manque de temps",sets:"2",reps:"12",w:"25 kg",fus:1},
+   {id:"s6e8",name:"Curl marteau",cue:"Brachial + long supinateur",sets:"3",reps:"10",w:"16 kg / main"},
+  ]},
+];
+
+/* ---------- storage ---------- */
+let STORE_OK=true;
+let state={vals:{},done:{},notes:{}};
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw) state=Object.assign({vals:{},done:{},notes:{}},JSON.parse(raw));
+    localStorage.setItem("__t","1");localStorage.removeItem("__t");
+  }catch(e){STORE_OK=false;}
+}
+let saveTimer=null;
+function save(){
+  if(!STORE_OK) return;
+  try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){STORE_OK=false;banner();return;}
+  const s=document.getElementById("saved");s.classList.add("on");
+  clearTimeout(saveTimer);saveTimer=setTimeout(()=>s.classList.remove("on"),1100);
+}
+function banner(){document.getElementById("banner").classList.add("on");}
+
+/* value get: saved override or default */
+function val(id,f,def){return (state.vals[id]&&state.vals[id][f]!=null)?state.vals[id][f]:def;}
+function setVal(id,f,v){ if(!state.vals[id])state.vals[id]={}; state.vals[id][f]=v; save(); }
+
+/* ---------- render ---------- */
+function esc(s){return (s+"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function cycleHTML(day){
+  return `<div class="cyc">`+DAYS.map(d=>{
+    if(d===day) return `<div class="cseg"><div class="cbar now"></div><div class="clab now">${d}</div></div>`;
+    if(TRAIN.has(d)) return `<div class="cseg"><div class="cbar"></div><div class="clab">${d}</div></div>`;
+    return `<div class="cseg"><div class="cbar off"></div><div class="clab">OFF</div></div>`;
+  }).join("")+`</div>`;
+}
+function numInput(id,f,def){
+  return `<input class="ed num" inputmode="numeric" data-ex="${id}" data-f="${f}" value="${esc(val(id,f,def))}">`;
+}
+function wtInput(id,f,def){
+  return `<input class="ed wt" inputmode="decimal" data-ex="${id}" data-f="${f}" value="${esc(val(id,f,def))}" placeholder="—">`;
+}
+function exoHTML(e){
+  const done=state.done[e.id]?" done":"";
+  const check=`<button class="check" data-check="${e.id}" aria-label="Fait">
+     <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></button>`;
+  if(e.top){
+    return `<div class="exo tops${done}" id="card-${e.id}">
+      <div class="exhead"><div class="exl"><span class="idx">TOP</span><span class="badge">Top set</span></div>${check}</div>
+      <div class="name">${esc(e.name)}</div>
+      <div class="tsrow"><span class="tslab">Top set</span>
+        <span class="sets">${numInput(e.id,"ts",e.ts)}<span class="x">×</span>${numInput(e.id,"tr",e.tr)}</span>
+        <span class="wwrap">${wtInput(e.id,"tw",e.tw)}</span></div>
+      <div class="tsrow"><span class="tslab">Back-off</span>
+        <span class="sets">${numInput(e.id,"bs",e.bs)}<span class="x">×</span>${numInput(e.id,"br",e.br)}</span>
+        <span class="wwrap">${wtInput(e.id,"bw",e.bw)}</span></div>
+      <div class="cue">${esc(e.cue)}</div>
+    </div>`;
+  }
+  const fus=e.fus?`<span class="fus">Fusible</span>`:"";
+  return `<div class="exo${done}" id="card-${e.id}">
+    <div class="exhead"><div class="exl"><span class="idx">${fus?"":"•"}</span>${fus}</div>${check}</div>
+    <div class="name">${esc(e.name)}</div>
+    <div class="cue">${esc(e.cue)}</div>
+    <div class="stat">
+      <div class="grp"><span class="glab">Séries × Reps</span>
+        <span class="sets">${numInput(e.id,"sets",e.sets)}<span class="x">×</span>${numInput(e.id,"reps",e.reps)}</span></div>
+      <div class="spacer"></div>
+      <div class="grp"><span class="glab">Charge</span>${wtInput(e.id,"w",e.w)}</div>
+    </div>
+  </div>`;
+}
+function sessionHTML(s,i){
+  return `<div class="session${i===0?" active":""}" data-s="${i}" style="--acc:${s.acc}">
+    <div class="head"><div class="ghost">${s.n}</div>
+      <div class="stag">${esc(s.tag)}</div>
+      <div class="stitle">${esc(s.title)}</div>
+      <div class="ssub">${esc(s.sub)}</div>
+    </div>
+    ${cycleHTML(s.day)}
+    <div class="chips"><span class="chip acc">${esc(s.series)}</span><span class="chip">${esc(s.dur)}</span><span class="chip">Échauffement 15 min</span></div>
+    ${i===0?`<div class="hint">Touche n'importe quelle valeur pour la modifier — <b>séries, reps, charges</b>. Tout est enregistré automatiquement sur ton téléphone. La coche à droite marque l'exercice comme fait pendant la séance.</div>`:``}
+    <div class="rule"></div>
+    ${s.exos.map(exoHTML).join("")}
+    <div class="notelab">Notes de séance ${s.n}</div>
+    <textarea class="note" data-note="${s.n}" placeholder="Sensations, douleurs, charges à tester la prochaine fois…">${esc(state.notes[s.n]||"")}</textarea>
+  </div>`;
+}
+function tabsHTML(){
+  return PROGRAM.map((s,i)=>`<button class="tab${i===0?" active":""}" data-tab="${i}" style="${i===0?`background:${s.acc}`:``}">
+    <span class="dot" style="background:${s.acc}"></span>S${s.n}<small>${s.title.split(" ")[0]}</small></button>`).join("");
+}
+
+/* ---------- build ---------- */
+function build(){
+  document.getElementById("tabs").innerHTML=tabsHTML();
+  document.getElementById("wrap").innerHTML=PROGRAM.map(sessionHTML).join("");
+  if(!STORE_OK) banner();
+
+  // tab switching
+  document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
+    const i=+t.dataset.tab;
+    document.querySelectorAll(".tab").forEach(x=>{x.classList.remove("active");x.style.background="";});
+    t.classList.add("active");t.style.background=PROGRAM[i].acc;
+    document.querySelectorAll(".session").forEach(p=>p.classList.remove("active"));
+    document.querySelector(`.session[data-s="${i}"]`).classList.add("active");
+    document.getElementById("theme").setAttribute("content",PROGRAM[i].acc);
+    window.scrollTo({top:0,behavior:"instant"in window?"instant":"auto"});
+  }));
+
+  // editable values
+  document.querySelectorAll("input.ed").forEach(inp=>{
+    inp.addEventListener("input",()=>setVal(inp.dataset.ex,inp.dataset.f,inp.value));
+  });
+  // done toggles
+  document.querySelectorAll("[data-check]").forEach(b=>{
+    b.addEventListener("click",()=>{
+      const id=b.dataset.check;
+      state.done[id]=state.done[id]?0:1;
+      document.getElementById("card-"+id).classList.toggle("done",!!state.done[id]);
+      save();
+    });
+  });
+  // notes
+  document.querySelectorAll("[data-note]").forEach(t=>{
+    t.addEventListener("input",()=>{state.notes[t.dataset.note]=t.value;save();});
+  });
+}
+
+/* theme meta ref (rename for lookup) */
+document.querySelector('meta[name="theme-color"]').id="theme";
+
+/* ---------- sheet / menu ---------- */
+const ov=document.getElementById("ov"), sheet=document.getElementById("sheet"), toast=document.getElementById("toast");
+function openSheet(html){sheet.innerHTML=`<div class="grab"></div>`+html;ov.classList.add("on");}
+function closeSheet(){ov.classList.remove("on");}
+ov.addEventListener("click",e=>{if(e.target===ov)closeSheet();});
+function showToast(msg){toast.textContent=msg;toast.classList.add("on");setTimeout(()=>toast.classList.remove("on"),1600);}
+
+document.getElementById("menuBtn").addEventListener("click",()=>{
+  openSheet(`
+    <div class="shtitle">Options</div>
+    <div class="shsub">Tes données vivent sur cet appareil. Sauvegarde-les de temps en temps pour ne rien perdre.</div>
+    <button class="act" data-a="export"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+      <div><div class="at">Sauvegarder / Exporter</div><div class="ad">Copie tes données (à coller dans Notes, ou à m'envoyer)</div></div></button>
+    <button class="act" data-a="import"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+      <div><div class="at">Restaurer</div><div class="ad">Recharge des données sauvegardées</div></div></button>
+    <button class="act" data-a="info"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      <div><div class="at">Rappels d'exécution</div><div class="ad">Intensité, progression, repos</div></div></button>
+    <button class="act" data-a="uncheck"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 019-9 9 9 0 016.7 3"/><path d="M21 3v6h-6"/></svg>
+      <div><div class="at">Réinitialiser les coches</div><div class="ad">Décoche tous les exercices pour la prochaine séance</div></div></button>
+    <button class="act danger" data-a="reset"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+      <div><div class="at">Tout réinitialiser</div><div class="ad">Efface toutes tes modifications et revient au programme d'origine</div></div></button>
+    <button class="close" data-a="close">Fermer</button>
+  `);
+});
+
+sheet.addEventListener("click",e=>{
+  const b=e.target.closest("[data-a]"); if(!b)return;
+  const a=b.dataset.a;
+  if(a==="close"){closeSheet();return;}
+  if(a==="uncheck"){
+    state.done={};save();
+    document.querySelectorAll(".exo.done").forEach(c=>c.classList.remove("done"));
+    closeSheet();showToast("Coches réinitialisées");return;
+  }
+  if(a==="reset"){
+    if(confirm("Effacer toutes tes modifications (charges, reps, notes) et revenir au programme d'origine ?")){
+      state={vals:{},done:{},notes:{}};
+      try{localStorage.removeItem(KEY);}catch(_){}
+      build();closeSheet();showToast("Programme réinitialisé");
+    }
+    return;
+  }
+  if(a==="info"){
+    openSheet(`
+      <div class="shtitle">Rappels d'exécution</div>
+      <div class="info-block">
+        <span class="k">Intensité</span><br><b>RIR 2</b> sur le 1ᵉʳ exercice de chaque groupe · <b>RIR 0–1</b> sur les isolations · top set <b>RPE 8</b> · excentrique <b>2–3 s</b> partout, pause 1 s en position étirée sur écartés, pullovers, curls, RDL, dips.
+        <span class="k">Progression (reps fixes)</span><br>Toutes les séries validées à la cible avec 1–2 reps en réserve → <b>+2,5 kg</b> (+1 kg isolations) à la séance suivante. Raté sur la dernière série → même charge, on retente.
+        <span class="k">Top sets</span><br>Quand les reps sortent à RPE 8 ou moins → <b>+2,5 kg</b> au cycle suivant.
+        <span class="k">Repos</span><br><b>2–3 min</b> composés · <b>1,5–2 min</b> isolations · <b>3 min</b> après un top set.
+        <span class="k">Surplus</span><br>+5–10 % · vise <b>+0,25 à 0,5 kg/mois</b> sur la balance · <b>1,7–2 g/kg</b> de protéines · deload toutes les 6–8 semaines.
+      </div>
+      <button class="close" data-a="close">Fermer</button>
+    `);
+    return;
+  }
+  if(a==="export"){
+    const snap=snapshot();
+    openSheet(`
+      <div class="shtitle">Sauvegarde</div>
+      <div class="shsub">Copie ce texte et garde-le (Notes, mail…). Pour régénérer tes fiches images à jour, colle-le simplement dans la conversation.</div>
+      <textarea class="ta" id="exta" readonly>${esc(JSON.stringify(snap))}</textarea>
+      <div class="row2"><button class="pbtn" id="copyBtn">Copier</button><button class="pbtn ghost" data-a="close">Fermer</button></div>
+    `);
+    document.getElementById("copyBtn").addEventListener("click",()=>{
+      const ta=document.getElementById("exta");
+      ta.select();ta.setSelectionRange(0,99999);
+      const done=()=>showToast("Copié ✓");
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(done).catch(()=>{try{document.execCommand("copy");done();}catch(_){}});}
+      else{try{document.execCommand("copy");done();}catch(_){}}
+    });
+    return;
+  }
+  if(a==="import"){
+    openSheet(`
+      <div class="shtitle">Restaurer</div>
+      <div class="shsub">Colle ici une sauvegarde exportée puis valide. Tes valeurs actuelles seront remplacées.</div>
+      <textarea class="ta" id="imta" placeholder='{"v":2,...}'></textarea>
+      <div class="row2"><button class="pbtn" id="doImport">Restaurer</button><button class="pbtn ghost" data-a="close">Fermer</button></div>
+    `);
+    document.getElementById("doImport").addEventListener("click",()=>{
+      try{
+        const obj=JSON.parse(document.getElementById("imta").value.trim());
+        applySnapshot(obj);save();build();closeSheet();showToast("Données restaurées ✓");
+      }catch(err){showToast("Format invalide");}
+    });
+    return;
+  }
+});
+
+/* full portable snapshot (self-contained, human-readable-ish) */
+function snapshot(){
+  const out={v:2,date:new Date().toISOString().slice(0,10),sessions:[]};
+  PROGRAM.forEach(s=>{
+    const se={s:s.n,title:s.title,note:state.notes[s.n]||"",exos:[]};
+    s.exos.forEach(e=>{
+      const o={id:e.id,name:e.name,done:!!state.done[e.id]};
+      if(e.top){o.top={sets:val(e.id,"ts",e.ts),reps:val(e.id,"tr",e.tr),w:val(e.id,"tw",e.tw)};
+        o.back={sets:val(e.id,"bs",e.bs),reps:val(e.id,"br",e.br),w:val(e.id,"bw",e.bw)};}
+      else{o.sets=val(e.id,"sets",e.sets);o.reps=val(e.id,"reps",e.reps);o.w=val(e.id,"w",e.w);}
+      se.exos.push(o);
+    });
+    out.sessions.push(se);
+  });
+  return out;
+}
+function applySnapshot(obj){
+  const ns={vals:{},done:{},notes:{}};
+  (obj.sessions||[]).forEach(se=>{
+    if(se.note) ns.notes[se.s]=se.note;
+    (se.exos||[]).forEach(o=>{
+      if(o.done) ns.done[o.id]=1;
+      const v={};
+      if(o.top){v.ts=o.top.sets;v.tr=o.top.reps;v.tw=o.top.w;v.bs=o.back.sets;v.br=o.back.reps;v.bw=o.back.w;}
+      else{v.sets=o.sets;v.reps=o.reps;v.w=o.w;}
+      ns.vals[o.id]=v;
+    });
+  });
+  state=ns;
+}
+
+/* ---------- go ---------- */
+load();build();
+</script>
+</body>
+</html>
